@@ -1,10 +1,18 @@
 # (c)AI[Perplexity]
-import os
 import requests
+import subprocess
 
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
+
+def get_git_hash():
+    try:
+        git_hash = subprocess.check_output(['git', 'rev-parse', 'HEAD'], 
+                                          stderr=subprocess.DEVNULL).decode().strip()
+        return git_hash[:7]  # Return short hash
+    except Exception:
+        return 'unknown'
 
 @app.route('/sendMessage', methods=['POST'])
 def send_message():
@@ -27,4 +35,5 @@ def send_message():
 
 @app.route('/')
 def home():
-    return 'Telegram Relay OK'
+    git_hash = get_git_hash()
+    return f'Telegram Relay OK (git: {git_hash})'
