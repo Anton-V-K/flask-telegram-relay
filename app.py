@@ -1,4 +1,5 @@
-# (c)AI[Perplexity]
+# (c)AI[Perplexity+CoPilot]
+import os
 import requests
 import subprocess
 
@@ -7,6 +8,12 @@ from flask import Flask, request, jsonify
 app = Flask(__name__)
 
 def get_git_hash():
+    # Try Vercel environment variable first (set during deployment)
+    git_hash = os.getenv('VERCEL_GIT_COMMIT_SHA')
+    if git_hash:
+        return git_hash[:7]  # Return short hash
+    
+    # Fall back to git command for local development
     try:
         git_hash = subprocess.check_output(['git', 'rev-parse', 'HEAD'], 
                                           stderr=subprocess.DEVNULL).decode().strip()
