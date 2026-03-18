@@ -4,10 +4,9 @@ import requests
 import subprocess
 
 from datetime import datetime
+from flask import Flask, jsonify, request, send_from_directory
 
-from flask import Flask, request, jsonify
-
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='/static')
 startup_time = datetime.now()
 
 def get_git_hash():
@@ -43,6 +42,10 @@ def send_message():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory('./static', 'favicon.ico')
+
 @app.route('/')
 def home():
     git_hash = get_git_hash()
@@ -54,6 +57,7 @@ def home():
     html = f"""
     <html>
         <head>
+            <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
             <style>
                 body {{ font-family: Arial, sans-serif; margin: 40px; background-color: #f5f5f5; }}
                 .container {{ background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 500px; }}
