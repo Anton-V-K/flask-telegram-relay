@@ -3,9 +3,12 @@ import os
 import requests
 import subprocess
 
+from datetime import datetime
+
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
+startup_time = datetime.now()
 
 def get_git_hash():
     # Try Vercel environment variable first (set during deployment)
@@ -43,4 +46,40 @@ def send_message():
 @app.route('/')
 def home():
     git_hash = get_git_hash()
-    return f'Telegram Relay OK (git: {git_hash})'
+    uptime_seconds = (datetime.now() - startup_time).total_seconds()
+    uptime_minutes = int(uptime_seconds // 60)
+    uptime_seconds = int(uptime_seconds % 60)
+    running_since = startup_time.strftime('%Y-%m-%d %H:%M:%S UTC')
+    
+    html = f"""
+    <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 40px; background-color: #f5f5f5; }}
+                .container {{ background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 500px; }}
+                .info {{ margin: 10px 0; font-size: 14px; color: #333; }}
+                .label {{ font-weight: bold; color: #666; display: inline-block; width: 120px; }}
+                .status {{ color: #22c55e; font-size: 24px; font-weight: bold; margin-bottom: 20px; }}
+                .value {{ color: #22c55e; font-family: monospace; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="status">✓ Telegram Relay OK</div>
+                <div class="info">
+                    <span class="label">Git Hash:</span>
+                    <span class="value">{git_hash}</span>
+                </div>
+                <div class="info">
+                    <span class="label">Running Since:</span>
+                    <span class="value">{running_since}</span>
+                </div>
+                <div class="info">
+                    <span class="label">Uptime:</span>
+                    <span class="value">{uptime_minutes}m {uptime_seconds}s</span>
+                </div>
+            </div>
+        </body>
+    </html>
+    """
+    return html
