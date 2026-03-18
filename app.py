@@ -1,30 +1,14 @@
 # (c)AI[Perplexity+CoPilot]
-import os
-import requests
-import subprocess
-
 from datetime import datetime
 from flask import Flask, jsonify, render_template, request, send_from_directory
+
+from core import get_git_hash, send_telegram_message
 
 app = Flask(__name__, static_folder='static', static_url_path='/static')
 startup_time = datetime.now()
 
-def get_git_hash():
-    # Try Vercel environment variable first (set during deployment)
-    git_hash = os.getenv('VERCEL_GIT_COMMIT_SHA')
-    if git_hash:
-        return git_hash[:7]  # Return short hash
-    
-    # Fall back to git command for local development
-    try:
-        git_hash = subprocess.check_output(['git', 'rev-parse', 'HEAD'], 
-                                          stderr=subprocess.DEVNULL).decode().strip()
-        return git_hash[:7]  # Return short hash
-    except Exception:
-        return 'unknown'
-
 @app.route('/sendMessage', methods=['POST'])
-def send_message():
+def send_message_endpoint():
     data = request.json
     bot_token = data.get('token')
     chat_id = data.get('chat_id')
@@ -33,12 +17,9 @@ def send_message():
     if not all([bot_token, chat_id, text]):
         return jsonify({'error': 'Missing params'}), 400
     
-    url = f'https://api.telegram.org/bot{bot_token}/sendMessage'
-    payload = {'chat_id': chat_id, 'text': text + ' (relay)'}
-    
     try:
-        response = requests.post(url, json=payload)
-        return jsonify(response.json())
+        response = send_telegram_message(bot_token, chat_id, text)
+        return jsonify(response)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
