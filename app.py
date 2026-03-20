@@ -9,7 +9,12 @@ startup_time = datetime.now()
 
 @app.route('/sendMessage', methods=['POST'])
 def send_message_endpoint():
-    data = request.json
+    # Support multiple content types: JSON, form data, and URL-encoded
+    if request.is_json:
+        data = request.json
+    else:
+        data = request.form.to_dict()
+    
     bot_token = data.get('token')
     chat_id = data.get('chat_id')
     text = data.get('text')
