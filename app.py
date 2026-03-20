@@ -2,7 +2,7 @@
 from datetime import datetime
 from flask import Flask, jsonify, render_template, request, send_from_directory
 
-from core import get_git_hash, send_telegram_message
+from core import get_git_hash, get_git_message, send_telegram_message
 
 app = Flask(__name__, static_folder='static', static_url_path='/static')
 startup_time = datetime.now()
@@ -55,6 +55,7 @@ def favicon():
 @app.route('/')
 def home():
     git_hash = get_git_hash()
+    git_message = get_git_message()
     uptime_seconds = (datetime.now() - startup_time).total_seconds()
     uptime_minutes = int(uptime_seconds // 60)
     uptime_seconds = int(uptime_seconds % 60)
@@ -62,6 +63,7 @@ def home():
     
     return render_template('index.html',
                           git_hash=git_hash,
+                          git_message=git_message,
                           running_since=running_since,
                           uptime_minutes=uptime_minutes,
                           uptime_seconds=uptime_seconds)

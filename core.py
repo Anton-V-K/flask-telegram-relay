@@ -14,7 +14,8 @@ def get_git_hash():
     Returns:
         str: Short git hash (7 characters), or 'unknown' if not available.
     """
-    # Try Vercel environment variable first (set during deployment)
+    # Try Vercel environment variable first
+    # Refer to https://vercel.com/docs/environment-variables/system-environment-variables
     git_hash = os.getenv('VERCEL_GIT_COMMIT_SHA')
     if git_hash:
         return git_hash[:7]  # Return short hash
@@ -24,6 +25,28 @@ def get_git_hash():
         git_hash = subprocess.check_output(['git', 'rev-parse', 'HEAD'], 
                                           stderr=subprocess.DEVNULL).decode().strip()
         return git_hash[:7]  # Return short hash
+    except Exception:
+        return 'unknown'
+
+
+def get_git_message():
+    """
+    Get the current git commit message.
+    
+    Returns:
+        str: Commit message (first line), or 'unknown' if not available.
+    """
+    # Try Vercel environment variable first
+    # Refer to https://vercel.com/docs/environment-variables/system-environment-variables
+    message = os.getenv('VERCEL_GIT_COMMIT_MESSAGE')
+    if message:
+        return message.split('\n')[0]  # Return first line only
+    
+    # Fall back to git command for local development
+    try:
+        message = subprocess.check_output(['git', 'log', '-1', '--format=%B'], 
+                                         stderr=subprocess.DEVNULL).decode().strip()
+        return message.split('\n')[0] if message else 'unknown'  # Return first line only
     except Exception:
         return 'unknown'
 
